@@ -21,6 +21,7 @@ if ($eccubeRoot !== null) {
     // Load EC-CUBE environment properly
     define('HTML_REALDIR', $eccubeRoot . '/html/');
     define('SAFE', true); // Skip session initialization for CLI
+    define('PLUGIN_ACTIVATE_FLAG', false); // Disable plugin loading for CLI
 
     require_once HTML_REALDIR . 'define.php';
     require_once HTML_REALDIR . HTML2DATA_DIR . 'require_base.php';
