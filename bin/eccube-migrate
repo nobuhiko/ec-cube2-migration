@@ -18,19 +18,22 @@ foreach ($eccubeRootPaths as $path) {
 }
 
 if ($eccubeRoot !== null) {
-    // Load composer autoloader FIRST to handle Eccube2\Migration classes
-    // before EC-CUBE's autoloader gets a chance to trigger plugin loading
+    // Load composer autoloader
     require_once $eccubeRoot . '/data/vendor/autoload.php';
 
-    // Load EC-CUBE environment properly
+    // Define constants needed for EC-CUBE
     define('HTML_REALDIR', $eccubeRoot . '/html/');
-    define('SAFE', true); // Skip session initialization for CLI
-
-    // Skip define.php but define the constants it provides
     define('HTML2DATA_DIR', '../data/');
-    define('USE_FILENAME_DIR_INDEX', null);
+    define('DATA_REALDIR', HTML_REALDIR . HTML2DATA_DIR);
+    define('CLASS_REALDIR', DATA_REALDIR . 'class/');
+    define('CLASS_EX_REALDIR', DATA_REALDIR . 'class_extends/');
 
-    require_once HTML_REALDIR . HTML2DATA_DIR . 'require_base.php';
+    // Load config for database settings
+    require_once DATA_REALDIR . 'config/config.php';
+
+    // Load only what's needed for SC_Query
+    require_once CLASS_REALDIR . 'SC_Query.php';
+    require_once CLASS_EX_REALDIR . 'SC_Query_Ex.php';
 } else {
     // Standalone mode - just load autoloader
     $autoloadPaths = [
