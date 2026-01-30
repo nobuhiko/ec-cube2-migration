@@ -131,4 +131,41 @@ class PostgreSQLPlatformTest extends TestCase
         $this->assertCount(1, $sqls);
         $this->assertStringContainsString('ALTER TABLE dtb_test RENAME COLUMN old_name TO new_name', $sqls[0]);
     }
+
+    public function testGetSerialDefaultSql(): void
+    {
+        $table = new Table('dtb_login_attempt');
+        $table->serial('login_attempt_id')->primary();
+
+        $sql = $this->platform->getSerialDefaultSql($table);
+
+        $this->assertNotNull($sql);
+        $this->assertStringContainsString('ALTER TABLE dtb_login_attempt', $sql);
+        $this->assertStringContainsString('ALTER COLUMN login_attempt_id', $sql);
+        $this->assertStringContainsString("SET DEFAULT nextval('dtb_login_attempt_login_attempt_id_seq')", $sql);
+    }
+
+    public function testGetSerialDefaultSqlReturnsNullForNonSerialTable(): void
+    {
+        $table = new Table('dtb_test');
+        $table->integer('id')->primary();
+        $table->text('name');
+
+        $sql = $this->platform->getSerialDefaultSql($table);
+
+        $this->assertNull($sql);
+    }
+
+    public function testSequenceNamingFollowsEcCubeConvention(): void
+    {
+        // EC-CUBE convention: dtb_{table}_{column}_seq
+        $table = new Table('dtb_customer');
+        $table->serial('customer_id')->primary();
+
+        $sequenceSql = $this->platform->createSequence($table);
+        $defaultSql = $this->platform->getSerialDefaultSql($table);
+
+        $this->assertStringContainsString('dtb_customer_customer_id_seq', $sequenceSql);
+        $this->assertStringContainsString('dtb_customer_customer_id_seq', $defaultSql);
+    }
 }

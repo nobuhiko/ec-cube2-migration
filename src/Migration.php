@@ -44,6 +44,12 @@ abstract class Migration
         $sequenceSql = $this->platform->createSequence($table);
         if ($sequenceSql !== null) {
             $this->execute($sequenceSql);
+
+            // Set DEFAULT nextval() for PostgreSQL serial columns
+            $defaultSql = $this->platform->getSerialDefaultSql($table);
+            if ($defaultSql !== null) {
+                $this->execute($defaultSql);
+            }
         }
     }
 

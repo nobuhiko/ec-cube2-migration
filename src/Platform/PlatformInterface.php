@@ -46,6 +46,11 @@ interface PlatformInterface
     public function dropSequence(string $tableName): ?string;
 
     /**
+     * Generate ALTER TABLE SET DEFAULT nextval() SQL (for PostgreSQL)
+     */
+    public function getSerialDefaultSql(Table $table): ?string;
+
+    /**
      * Get SQL type for abstract column type
      */
     public function getColumnType(string $abstractType, array $options = []): string;

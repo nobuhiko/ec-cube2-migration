@@ -125,6 +125,11 @@ abstract class AbstractPlatform implements PlatformInterface
         return null;
     }
 
+    public function getSerialDefaultSql(Table $table): ?string
+    {
+        return null;
+    }
+
     protected function buildColumnDefinition(Column $column): string
     {
         $parts = [
