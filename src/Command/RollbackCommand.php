@@ -20,6 +20,8 @@ class RollbackCommand extends Command
 
     protected function initialize(InputInterface $input, OutputInterface $output): void
     {
+        // Preload migration classes before EC-CUBE autoloader takes over
+        class_exists(\Eccube2\Migration\Migrator::class);
         \Eccube2\Init::init();
     }
 
