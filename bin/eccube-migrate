@@ -31,6 +31,13 @@ if ($eccubeRoot !== null) {
     // Load config for database settings
     require_once DATA_REALDIR . 'config/config.php';
 
+    // Load constants
+    if (file_exists(DATA_REALDIR . 'cache/mtb_constants.php')) {
+        require_once DATA_REALDIR . 'cache/mtb_constants.php';
+    } else {
+        require_once DATA_REALDIR . 'mtb_constants_init.php';
+    }
+
     // Load only what's needed for SC_Query
     require_once CLASS_REALDIR . 'SC_Query.php';
     require_once CLASS_EX_REALDIR . 'SC_Query_Ex.php';
