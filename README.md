@@ -12,7 +12,7 @@ EC-CUBE 2系用の軽量データベースマイグレーションツール
 ## インストール
 
 ```bash
-composer require ec-cube2/migration
+composer require nobuhiko/ec-cube2-migration
 ```
 
 ## 使い方

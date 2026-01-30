@@ -1,5 +1,5 @@
 {
-    "name": "ec-cube2/migration",
+    "name": "nobuhiko/ec-cube2-migration",
     "description": "Database migration tool for EC-CUBE 2",
     "type": "library",
     "license": "LGPL-3.0-or-later",
