@@ -24,17 +24,15 @@ if (!$autoloaderFound) {
     exit(1);
 }
 
-// Try to load EC-CUBE environment
-$eccubeBootstrapPaths = [
+// Try to load EC-CUBE configuration (just config.php, not require_base.php)
+$eccubeConfigPaths = [
     getcwd() . '/data/config/config.php',
     __DIR__ . '/../../../../data/config/config.php',
 ];
 
-foreach ($eccubeBootstrapPaths as $configPath) {
+foreach ($eccubeConfigPaths as $configPath) {
     if (file_exists($configPath)) {
-        // Set up EC-CUBE constants
-        define('HTML_REALDIR', dirname($configPath, 2) . '/../html/');
-        require_once dirname($configPath) . '/../require_base.php';
+        require_once $configPath;
         break;
     }
 }

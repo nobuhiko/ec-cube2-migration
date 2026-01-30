@@ -13,6 +13,8 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class StatusCommand extends Command
 {
+    use DatabaseConnectionTrait;
+
     protected static $defaultName = 'migrate:status';
     protected static $defaultDescription = 'Show migration status';
 
@@ -35,7 +37,8 @@ class StatusCommand extends Command
         $io = new SymfonyStyle($input, $output);
 
         try {
-            $migrator = $this->createMigrator($input->getOption('path'));
+            [$connection, $dbType] = $this->getConnection();
+            $migrator = new Migrator($connection, $dbType, $input->getOption('path'));
             $status = $migrator->getStatus();
 
             if (empty($status)) {
@@ -77,20 +80,5 @@ class StatusCommand extends Command
     {
         $parts = explode('\\', $fullName);
         return end($parts);
-    }
-
-    protected function createMigrator(string $path): Migrator
-    {
-        if (defined('DB_TYPE') && class_exists('SC_Query')) {
-            $connection = \SC_Query::getSingletonInstance();
-            $dbType = DB_TYPE;
-        } else {
-            throw new \RuntimeException(
-                'EC-CUBE environment not detected. ' .
-                'Please run this command from EC-CUBE root directory or configure database connection.'
-            );
-        }
-
-        return new Migrator($connection, $dbType, $path);
     }
 }
