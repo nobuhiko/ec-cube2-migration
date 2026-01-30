@@ -18,12 +18,17 @@ foreach ($eccubeRootPaths as $path) {
 }
 
 if ($eccubeRoot !== null) {
+    // Load composer autoloader FIRST to handle Eccube2\Migration classes
+    // before EC-CUBE's autoloader gets a chance to trigger plugin loading
+    require_once $eccubeRoot . '/data/vendor/autoload.php';
+
     // Load EC-CUBE environment properly
     define('HTML_REALDIR', $eccubeRoot . '/html/');
     define('SAFE', true); // Skip session initialization for CLI
-    define('PLUGIN_ACTIVATE_FLAG', false); // Disable plugin loading for CLI
 
-    require_once HTML_REALDIR . 'define.php';
+    // Skip define.php (it only loads autoloader and sets HTML2DATA_DIR)
+    define('HTML2DATA_DIR', '../data/');
+
     require_once HTML_REALDIR . HTML2DATA_DIR . 'require_base.php';
 } else {
     // Standalone mode - just load autoloader
