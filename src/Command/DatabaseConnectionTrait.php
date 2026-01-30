@@ -13,21 +13,21 @@ trait DatabaseConnectionTrait
      */
     protected function getConnection(): array
     {
-        // Try SC_Query first (when running within EC-CUBE)
-        if (defined('DB_TYPE') && class_exists('SC_Query')) {
+        if (!defined('DB_TYPE')) {
+            throw new \RuntimeException(
+                'Database configuration not found. ' .
+                'Please run this command from EC-CUBE root directory or configure database connection.'
+            );
+        }
+
+        // Try SC_Query only when EC-CUBE is fully initialized (CLASS_REALDIR exists)
+        if (defined('CLASS_REALDIR') && class_exists('SC_Query')) {
             return [\SC_Query::getSingletonInstance(), DB_TYPE];
         }
 
-        // Fall back to PDO
-        if (defined('DB_TYPE')) {
-            $pdo = $this->createPdoConnection();
-            return [$pdo, DB_TYPE];
-        }
-
-        throw new \RuntimeException(
-            'Database configuration not found. ' .
-            'Please run this command from EC-CUBE root directory or configure database connection.'
-        );
+        // Use PDO for standalone mode
+        $pdo = $this->createPdoConnection();
+        return [$pdo, DB_TYPE];
     }
 
     /**
