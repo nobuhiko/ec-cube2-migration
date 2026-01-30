@@ -3,37 +3,58 @@
 
 declare(strict_types=1);
 
-// Find autoloader
-$autoloadPaths = [
-    __DIR__ . '/../vendor/autoload.php',           // Package development
-    __DIR__ . '/../../../autoload.php',            // Installed as dependency
-    __DIR__ . '/../../../../data/vendor/autoload.php', // EC-CUBE installation
+// Try to find EC-CUBE root directory
+$eccubeRootPaths = [
+    getcwd(),                           // Current working directory
+    dirname(__DIR__, 4),                // Installed as dependency (data/vendor/nobuhiko/ec-cube2-migration)
 ];
 
-$autoloaderFound = false;
-foreach ($autoloadPaths as $autoloadPath) {
-    if (file_exists($autoloadPath)) {
-        require_once $autoloadPath;
-        $autoloaderFound = true;
+$eccubeRoot = null;
+foreach ($eccubeRootPaths as $path) {
+    if (file_exists($path . '/html/define.php') && file_exists($path . '/data/config/config.php')) {
+        $eccubeRoot = $path;
         break;
     }
 }
 
-if (!$autoloaderFound) {
-    fwrite(STDERR, "Could not find autoloader. Please run 'composer install'.\n");
-    exit(1);
-}
+if ($eccubeRoot !== null) {
+    // Load EC-CUBE environment properly
+    define('HTML_REALDIR', $eccubeRoot . '/html/');
+    define('SAFE', true); // Skip session initialization for CLI
 
-// Try to load EC-CUBE configuration (just config.php, not require_base.php)
-$eccubeConfigPaths = [
-    getcwd() . '/data/config/config.php',
-    __DIR__ . '/../../../../data/config/config.php',
-];
+    require_once HTML_REALDIR . 'define.php';
+    require_once HTML_REALDIR . HTML2DATA_DIR . 'require_base.php';
+} else {
+    // Standalone mode - just load autoloader
+    $autoloadPaths = [
+        __DIR__ . '/../vendor/autoload.php',           // Package development
+        __DIR__ . '/../../../autoload.php',            // Installed as dependency
+    ];
 
-foreach ($eccubeConfigPaths as $configPath) {
-    if (file_exists($configPath)) {
-        require_once $configPath;
-        break;
+    $autoloaderFound = false;
+    foreach ($autoloadPaths as $autoloadPath) {
+        if (file_exists($autoloadPath)) {
+            require_once $autoloadPath;
+            $autoloaderFound = true;
+            break;
+        }
+    }
+
+    if (!$autoloaderFound) {
+        fwrite(STDERR, "Could not find autoloader. Please run 'composer install'.\n");
+        exit(1);
+    }
+
+    // Try to load EC-CUBE config for database settings
+    $configPaths = [
+        getcwd() . '/data/config/config.php',
+    ];
+
+    foreach ($configPaths as $configPath) {
+        if (file_exists($configPath)) {
+            require_once $configPath;
+            break;
+        }
     }
 }
 
