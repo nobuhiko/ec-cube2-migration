@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Eccube2\Migration\Platform;
 
+use Eccube2\Migration\Schema\Table;
+
 class MySQLPlatform extends AbstractPlatform
 {
     public function getName(): string
@@ -52,5 +54,51 @@ class MySQLPlatform extends AbstractPlatform
     protected function buildDropIndex(string $tableName, string $indexName): string
     {
         return sprintf('DROP INDEX %s ON %s', $indexName, $tableName);
+    }
+
+    public function createSequence(Table $table): ?string
+    {
+        foreach ($table->getColumns() as $column) {
+            if ($column->getType() === 'serial' && $column->isPrimary()) {
+                $sequenceName = $this->getSequenceName($table->getName(), $column->getName());
+                return sprintf(
+                    "CREATE TABLE %s (
+    sequence INT NOT NULL AUTO_INCREMENT,
+    PRIMARY KEY (sequence)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8",
+                    $sequenceName
+                );
+            }
+        }
+        return null;
+    }
+
+    public function dropSequence(string $tableName): ?string
+    {
+        $columnName = $this->guessSerialColumnName($tableName);
+        if ($columnName !== null) {
+            $sequenceName = $this->getSequenceName($tableName, $columnName);
+            return sprintf('DROP TABLE IF EXISTS %s', $sequenceName);
+        }
+        return null;
+    }
+
+    private function getSequenceName(string $tableName, string $columnName): string
+    {
+        return sprintf('%s_%s_seq', $tableName, $columnName);
+    }
+
+    private function guessSerialColumnName(string $tableName): ?string
+    {
+        // EC-CUBE convention: dtb_xxx -> xxx_id
+        if (strpos($tableName, 'dtb_') === 0) {
+            $baseName = substr($tableName, 4);
+            return $baseName . '_id';
+        }
+        if (strpos($tableName, 'mtb_') === 0) {
+            $baseName = substr($tableName, 4);
+            return $baseName . '_id';
+        }
+        return null;
     }
 }

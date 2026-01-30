@@ -135,11 +135,34 @@ class MySQLPlatformTest extends TestCase
         $this->assertSame('BLOB', $this->platform->getColumnType('blob'));
     }
 
-    public function testCreateSequenceReturnsNull(): void
+    public function testCreateSequence(): void
     {
-        $table = new Table('dtb_test');
-        $table->serial('test_id')->primary();
+        $table = new Table('dtb_login_attempt');
+        $table->serial('login_attempt_id')->primary();
 
-        $this->assertNull($this->platform->createSequence($table));
+        $sql = $this->platform->createSequence($table);
+
+        $this->assertNotNull($sql);
+        $this->assertStringContainsString('CREATE TABLE dtb_login_attempt_login_attempt_id_seq', $sql);
+        $this->assertStringContainsString('sequence INT NOT NULL AUTO_INCREMENT', $sql);
+        $this->assertStringContainsString('PRIMARY KEY (sequence)', $sql);
+    }
+
+    public function testDropSequence(): void
+    {
+        $sql = $this->platform->dropSequence('dtb_login_attempt');
+
+        $this->assertNotNull($sql);
+        $this->assertStringContainsString('DROP TABLE IF EXISTS dtb_login_attempt_login_attempt_id_seq', $sql);
+    }
+
+    public function testSequenceNamingFollowsEcCubeConvention(): void
+    {
+        $table = new Table('dtb_customer');
+        $table->serial('customer_id')->primary();
+
+        $sql = $this->platform->createSequence($table);
+
+        $this->assertStringContainsString('dtb_customer_customer_id_seq', $sql);
     }
 }

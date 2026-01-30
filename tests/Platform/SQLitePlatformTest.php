@@ -95,19 +95,34 @@ class SQLitePlatformTest extends TestCase
         $this->assertSame('DROP TABLE IF EXISTS dtb_test', $sql);
     }
 
-    public function testCreateSequenceReturnsNull(): void
+    public function testCreateSequence(): void
     {
-        $table = new Table('dtb_test');
-        $table->serial('test_id')->primary();
+        $table = new Table('dtb_login_attempt');
+        $table->serial('login_attempt_id')->primary();
 
-        // SQLite doesn't use sequences
-        $this->assertNull($this->platform->createSequence($table));
+        $sql = $this->platform->createSequence($table);
+
+        $this->assertNotNull($sql);
+        $this->assertStringContainsString('CREATE TABLE IF NOT EXISTS dtb_login_attempt_login_attempt_id_seq', $sql);
+        $this->assertStringContainsString('sequence INTEGER PRIMARY KEY AUTOINCREMENT', $sql);
     }
 
-    public function testDropSequenceReturnsNull(): void
+    public function testDropSequence(): void
     {
-        // SQLite doesn't use sequences
-        $this->assertNull($this->platform->dropSequence('dtb_test'));
+        $sql = $this->platform->dropSequence('dtb_login_attempt');
+
+        $this->assertNotNull($sql);
+        $this->assertStringContainsString('DROP TABLE IF EXISTS dtb_login_attempt_login_attempt_id_seq', $sql);
+    }
+
+    public function testSequenceNamingFollowsEcCubeConvention(): void
+    {
+        $table = new Table('dtb_customer');
+        $table->serial('customer_id')->primary();
+
+        $sql = $this->platform->createSequence($table);
+
+        $this->assertStringContainsString('dtb_customer_customer_id_seq', $sql);
     }
 
     public function testAlterTableAddColumn(): void

@@ -80,4 +80,49 @@ class SQLitePlatform extends AbstractPlatform
 
         return $typeMap[$abstractType];
     }
+
+    public function createSequence(Table $table): ?string
+    {
+        foreach ($table->getColumns() as $column) {
+            if ($column->getType() === 'serial' && $column->isPrimary()) {
+                $sequenceName = $this->getSequenceName($table->getName(), $column->getName());
+                return sprintf(
+                    "CREATE TABLE IF NOT EXISTS %s (
+    sequence INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL
+)",
+                    $sequenceName
+                );
+            }
+        }
+        return null;
+    }
+
+    public function dropSequence(string $tableName): ?string
+    {
+        $columnName = $this->guessSerialColumnName($tableName);
+        if ($columnName !== null) {
+            $sequenceName = $this->getSequenceName($tableName, $columnName);
+            return sprintf('DROP TABLE IF EXISTS %s', $sequenceName);
+        }
+        return null;
+    }
+
+    private function getSequenceName(string $tableName, string $columnName): string
+    {
+        return sprintf('%s_%s_seq', $tableName, $columnName);
+    }
+
+    private function guessSerialColumnName(string $tableName): ?string
+    {
+        // EC-CUBE convention: dtb_xxx -> xxx_id
+        if (strpos($tableName, 'dtb_') === 0) {
+            $baseName = substr($tableName, 4);
+            return $baseName . '_id';
+        }
+        if (strpos($tableName, 'mtb_') === 0) {
+            $baseName = substr($tableName, 4);
+            return $baseName . '_id';
+        }
+        return null;
+    }
 }
