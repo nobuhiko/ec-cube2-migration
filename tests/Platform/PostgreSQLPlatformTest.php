@@ -45,7 +45,7 @@ class PostgreSQLPlatformTest extends TestCase
         $sql = $this->platform->createSequence($table);
 
         $this->assertNotNull($sql);
-        $this->assertStringContainsString('CREATE SEQUENCE dtb_test_test_id_seq', $sql);
+        $this->assertStringContainsString('CREATE SEQUENCE IF NOT EXISTS dtb_test_test_id_seq', $sql);
         $this->assertStringContainsString('START WITH 1', $sql);
     }
 

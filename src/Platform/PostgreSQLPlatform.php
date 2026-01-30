@@ -50,7 +50,7 @@ class PostgreSQLPlatform extends AbstractPlatform
             if ($column->getType() === 'serial' && $column->isPrimary()) {
                 $sequenceName = $this->getSequenceName($table->getName(), $column->getName());
                 return sprintf(
-                    'CREATE SEQUENCE %s START WITH 1 INCREMENT BY 1',
+                    'CREATE SEQUENCE IF NOT EXISTS %s START WITH 1 INCREMENT BY 1',
                     $sequenceName
                 );
             }
