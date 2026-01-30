@@ -87,9 +87,9 @@ class SQLitePlatform extends AbstractPlatform
             if ($column->getType() === 'serial' && $column->isPrimary()) {
                 $sequenceName = $this->getSequenceName($table->getName(), $column->getName());
                 return sprintf(
-                    "CREATE TABLE IF NOT EXISTS %s (
+                    'CREATE TABLE IF NOT EXISTS %s (
     sequence INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL
-)",
+)',
                     $sequenceName
                 );
             }

@@ -62,10 +62,10 @@ class MySQLPlatform extends AbstractPlatform
             if ($column->getType() === 'serial' && $column->isPrimary()) {
                 $sequenceName = $this->getSequenceName($table->getName(), $column->getName());
                 return sprintf(
-                    "CREATE TABLE %s (
+                    'CREATE TABLE %s (
     sequence INT NOT NULL AUTO_INCREMENT,
     PRIMARY KEY (sequence)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8",
+) ENGINE=InnoDB DEFAULT CHARSET=utf8',
                     $sequenceName
                 );
             }
