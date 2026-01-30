@@ -162,7 +162,7 @@ jobs:
         if: matrix.db == 'mysql'
         working-directory: ec-cube2
         run: |
-          ./eccube_install.sh mysqli
+          ./eccube_install.sh mysql
         env:
           HTTP_URL: http://localhost/
           HTTPS_URL: http://localhost/
