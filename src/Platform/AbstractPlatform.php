@@ -137,15 +137,17 @@ abstract class AbstractPlatform implements PlatformInterface
             $this->getColumnType($column->getType(), $column->getOptions()),
         ];
 
-        // Handle PRIMARY KEY for serial types
+        // Handle PRIMARY KEY for serial types (auto-increment syntax includes NOT NULL)
+        $hasNotNull = false;
         if ($column->isPrimary() && $column->getType() === 'serial') {
             $parts[] = $this->getAutoIncrementSyntax();
+            $hasNotNull = true; // getAutoIncrementSyntax() includes NOT NULL
         } elseif ($column->isPrimary() && $this->isPrimaryKeyInline()) {
             $parts[] = 'PRIMARY KEY';
         }
 
-        // NOT NULL
-        if (!$column->isNullable()) {
+        // NOT NULL (skip if already added by auto-increment syntax)
+        if (!$hasNotNull && !$column->isNullable()) {
             $parts[] = 'NOT NULL';
         }
 

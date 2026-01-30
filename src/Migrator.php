@@ -57,12 +57,17 @@ class Migrator
         $executed = $this->getExecutedMigrations();
         $available = $this->getAvailableMigrations();
 
-        $pending = array_diff(array_keys($available), $executed);
+        // Cast keys to strings for comparison (PHP converts numeric string keys to integers)
+        $availableVersions = array_map('strval', array_keys($available));
+        $pending = array_diff($availableVersions, $executed);
         sort($pending);
 
         $executedVersions = [];
         foreach ($pending as $version) {
-            $this->runMigration($available[$version], 'up');
+            // Use original key (may be integer) for array access
+            $key = array_search($version, $availableVersions);
+            $originalKey = array_keys($available)[$key];
+            $this->runMigration($available[$originalKey], 'up');
             $this->markAsExecuted($version);
             $executedVersions[] = $version;
         }
@@ -109,9 +114,11 @@ class Migrator
 
         $status = [];
         foreach ($available as $version => $class) {
+            // Cast version to string for comparison (PHP converts numeric string keys to integers)
+            $versionStr = (string) $version;
             $status[] = [
-                'version' => $version,
-                'executed' => in_array($version, $executed, true),
+                'version' => $versionStr,
+                'executed' => in_array($versionStr, $executed, true),
                 'name' => $class,
             ];
         }
@@ -152,8 +159,9 @@ class Migrator
             $className = pathinfo($file, PATHINFO_FILENAME);
 
             // Extract version from class name (e.g., Version20260130001 -> 20260130001)
+            // Keep version as string for consistent comparison with executed migrations
             if (preg_match('/^Version(\d+)/', $className, $matches)) {
-                $version = $matches[1];
+                $version = (string) $matches[1];
 
                 // Try to find the full class name with namespace
                 $fullClassName = $this->findMigrationClass($className);
