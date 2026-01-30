@@ -18,6 +18,11 @@ class RollbackCommand extends Command
     protected static $defaultName = 'migrate:rollback';
     protected static $defaultDescription = 'Rollback the last migration(s)';
 
+    protected function initialize(InputInterface $input, OutputInterface $output): void
+    {
+        \Eccube2\Init::init();
+    }
+
     protected function configure(): void
     {
         $this

@@ -13,13 +13,6 @@ trait DatabaseConnectionTrait
      */
     protected function getConnection(): array
     {
-        if (!defined('DB_TYPE')) {
-            throw new \RuntimeException(
-                'Database configuration not found. ' .
-                'Please run this command via ec-cube2/cli.'
-            );
-        }
-
         return [\SC_Query::getSingletonInstance(), DB_TYPE];
     }
 }

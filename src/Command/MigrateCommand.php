@@ -18,6 +18,11 @@ class MigrateCommand extends Command
     protected static $defaultName = 'migrate';
     protected static $defaultDescription = 'Run pending database migrations';
 
+    protected function initialize(InputInterface $input, OutputInterface $output): void
+    {
+        \Eccube2\Init::init();
+    }
+
     protected function configure(): void
     {
         $this

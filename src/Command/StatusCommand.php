@@ -18,6 +18,11 @@ class StatusCommand extends Command
     protected static $defaultName = 'migrate:status';
     protected static $defaultDescription = 'Show migration status';
 
+    protected function initialize(InputInterface $input, OutputInterface $output): void
+    {
+        \Eccube2\Init::init();
+    }
+
     protected function configure(): void
     {
         $this
