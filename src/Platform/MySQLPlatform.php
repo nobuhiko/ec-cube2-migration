@@ -38,6 +38,11 @@ class MySQLPlatform extends AbstractPlatform
         return 'NOT NULL AUTO_INCREMENT PRIMARY KEY';
     }
 
+    protected function isPrimaryKeyInline(): bool
+    {
+        return true;
+    }
+
     protected function getTableOptions(): string
     {
         return ' ENGINE=InnoDB DEFAULT CHARSET=utf8';
