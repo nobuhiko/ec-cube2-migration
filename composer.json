@@ -23,16 +23,16 @@
     "autoload": {
         "psr-4": {
             "Eccube2\\Migration\\": "src/"
-        }
+        },
+        "files": [
+            "bootstrap.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
             "Eccube2\\Migration\\Tests\\": "tests/"
         }
     },
-    "bin": [
-        "bin/eccube-migrate"
-    ],
     "scripts": {
         "test": "phpunit",
         "cs-fix": "php-cs-fixer fix"
