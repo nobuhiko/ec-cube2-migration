@@ -26,8 +26,9 @@ if ($eccubeRoot !== null) {
     define('HTML_REALDIR', $eccubeRoot . '/html/');
     define('SAFE', true); // Skip session initialization for CLI
 
-    // Skip define.php (it only loads autoloader and sets HTML2DATA_DIR)
+    // Skip define.php but define the constants it provides
     define('HTML2DATA_DIR', '../data/');
+    define('USE_FILENAME_DIR_INDEX', null);
 
     require_once HTML_REALDIR . HTML2DATA_DIR . 'require_base.php';
 } else {
