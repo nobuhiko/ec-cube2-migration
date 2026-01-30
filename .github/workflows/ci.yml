@@ -63,3 +63,219 @@ jobs:
 
       - name: Run PHP CS Fixer
         run: vendor/bin/php-cs-fixer fix --dry-run --diff
+
+  integration-test:
+    name: EC-CUBE Integration (${{ matrix.db }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - db: mysql
+            db_type: mysqli
+          - db: pgsql
+            db_type: pgsql
+          - db: sqlite
+            db_type: sqlite3
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: eccube_db
+          MYSQL_USER: eccube_db_user
+          MYSQL_PASSWORD: password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: eccube_db
+          POSTGRES_USER: eccube_db_user
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout migration tool
+        uses: actions/checkout@v4
+        with:
+          path: ec-cube2-migration
+
+      - name: Checkout EC-CUBE 2
+        uses: actions/checkout@v4
+        with:
+          repository: EC-CUBE/ec-cube2
+          path: ec-cube2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_mysql, pdo_pgsql, pdo_sqlite, gd
+          coverage: none
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-eccube2-${{ hashFiles('ec-cube2/composer.json') }}
+          restore-keys: ${{ runner.os }}-composer-eccube2-
+
+      - name: Install EC-CUBE dependencies
+        working-directory: ec-cube2
+        run: composer install --prefer-dist --no-progress
+
+      - name: Add migration tool as path repository
+        working-directory: ec-cube2
+        run: |
+          composer config repositories.migration path ../ec-cube2-migration
+          composer require nobuhiko/ec-cube2-migration:@dev --no-progress
+
+      - name: Install ec-cube2/cli
+        working-directory: ec-cube2
+        run: |
+          composer require ec-cube2/cli:dev-master --no-progress
+
+      - name: Setup EC-CUBE (MySQL)
+        if: matrix.db == 'mysql'
+        working-directory: ec-cube2
+        run: |
+          ./eccube_install.sh mysqli
+        env:
+          HTTP_URL: http://localhost/
+          HTTPS_URL: http://localhost/
+          ROOT_URLPATH: /
+          DBSERVER: 127.0.0.1
+          DBPORT: 3306
+          DBNAME: eccube_db
+          DBUSER: eccube_db_user
+          DBPASS: password
+
+      - name: Setup EC-CUBE (PostgreSQL)
+        if: matrix.db == 'pgsql'
+        working-directory: ec-cube2
+        run: |
+          ./eccube_install.sh pgsql
+        env:
+          HTTP_URL: http://localhost/
+          HTTPS_URL: http://localhost/
+          ROOT_URLPATH: /
+          DBSERVER: 127.0.0.1
+          DBPORT: 5432
+          DBNAME: eccube_db
+          DBUSER: eccube_db_user
+          DBPASS: password
+
+      - name: Setup EC-CUBE (SQLite)
+        if: matrix.db == 'sqlite'
+        working-directory: ec-cube2
+        run: |
+          ./eccube_install.sh sqlite3
+        env:
+          HTTP_URL: http://localhost/
+          HTTPS_URL: http://localhost/
+          ROOT_URLPATH: /
+
+      - name: Create test migration
+        working-directory: ec-cube2
+        run: |
+          mkdir -p data/migrations
+          cat > data/migrations/Version20260101000001_TestMigration.php << 'EOF'
+          <?php
+          declare(strict_types=1);
+          use Eccube2\Migration\Migration;
+          use Eccube2\Migration\Schema\Table;
+
+          class Version20260101000001_TestMigration extends Migration
+          {
+              public function up(): void
+              {
+                  $this->create('dtb_migration_test', function (Table $table) {
+                      $table->serial();
+                      $table->string('name', 255)->notNull();
+                      $table->text('description')->nullable();
+                      $table->timestamp('create_date')->notNull()->default('CURRENT_TIMESTAMP');
+                      $table->index(['name']);
+                  });
+              }
+
+              public function down(): void
+              {
+                  $this->drop('dtb_migration_test');
+              }
+          }
+          EOF
+
+      - name: Run migrate:status (before)
+        working-directory: ec-cube2
+        run: |
+          php data/vendor/bin/eccube migrate:status
+
+      - name: Run migrate
+        working-directory: ec-cube2
+        run: |
+          php data/vendor/bin/eccube migrate
+
+      - name: Run migrate:status (after)
+        working-directory: ec-cube2
+        run: |
+          php data/vendor/bin/eccube migrate:status
+
+      - name: Verify table exists (MySQL)
+        if: matrix.db == 'mysql'
+        run: |
+          mysql -h 127.0.0.1 -u eccube_db_user -ppassword eccube_db -e "DESCRIBE dtb_migration_test;"
+
+      - name: Verify table exists (PostgreSQL)
+        if: matrix.db == 'pgsql'
+        env:
+          PGPASSWORD: password
+        run: |
+          psql -h 127.0.0.1 -U eccube_db_user -d eccube_db -c "\d dtb_migration_test"
+
+      - name: Verify table exists (SQLite)
+        if: matrix.db == 'sqlite'
+        working-directory: ec-cube2
+        run: |
+          sqlite3 data/eccube_db.sqlite3 ".schema dtb_migration_test"
+
+      - name: Run migrate:rollback
+        working-directory: ec-cube2
+        run: |
+          php data/vendor/bin/eccube migrate:rollback
+
+      - name: Verify table dropped (MySQL)
+        if: matrix.db == 'mysql'
+        run: |
+          ! mysql -h 127.0.0.1 -u eccube_db_user -ppassword eccube_db -e "DESCRIBE dtb_migration_test;" 2>/dev/null
+
+      - name: Verify table dropped (PostgreSQL)
+        if: matrix.db == 'pgsql'
+        env:
+          PGPASSWORD: password
+        run: |
+          ! psql -h 127.0.0.1 -U eccube_db_user -d eccube_db -c "\d dtb_migration_test" 2>/dev/null
+
+      - name: Verify table dropped (SQLite)
+        if: matrix.db == 'sqlite'
+        working-directory: ec-cube2
+        run: |
+          result=$(sqlite3 data/eccube_db.sqlite3 ".schema dtb_migration_test")
+          [ -z "$result" ]
