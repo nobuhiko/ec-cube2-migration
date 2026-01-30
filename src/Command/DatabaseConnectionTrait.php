@@ -22,7 +22,12 @@ trait DatabaseConnectionTrait
 
         // Try SC_Query only when EC-CUBE is fully initialized (CLASS_REALDIR exists)
         if (defined('CLASS_REALDIR') && class_exists('SC_Query')) {
-            return [\SC_Query::getSingletonInstance(), DB_TYPE];
+            try {
+                return [\SC_Query::getSingletonInstance(), DB_TYPE];
+            } catch (\Error $e) {
+                // SC_Query requires full EC-CUBE initialization
+                // Fall back to PDO
+            }
         }
 
         // Use PDO for standalone mode
