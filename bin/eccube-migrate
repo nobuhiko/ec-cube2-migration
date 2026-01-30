@@ -42,9 +42,7 @@ if ($eccubeRoot !== null) {
         require_once DATA_REALDIR . 'mtb_constants_init.php';
     }
 
-    // Load only what's needed for SC_Query
-    require_once CLASS_REALDIR . 'SC_Query.php';
-    require_once CLASS_EX_REALDIR . 'SC_Query_Ex.php';
+    // SC_Query and its dependencies should be loaded by composer classmap autoloader
 } else {
     // Standalone mode - just load autoloader
     $autoloadPaths = [
