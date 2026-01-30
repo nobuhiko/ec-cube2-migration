@@ -1,0 +1,55 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+// Find autoloader
+$autoloadPaths = [
+    __DIR__ . '/../vendor/autoload.php',           // Package development
+    __DIR__ . '/../../../autoload.php',            // Installed as dependency
+    __DIR__ . '/../../../../data/vendor/autoload.php', // EC-CUBE installation
+];
+
+$autoloaderFound = false;
+foreach ($autoloadPaths as $autoloadPath) {
+    if (file_exists($autoloadPath)) {
+        require_once $autoloadPath;
+        $autoloaderFound = true;
+        break;
+    }
+}
+
+if (!$autoloaderFound) {
+    fwrite(STDERR, "Could not find autoloader. Please run 'composer install'.\n");
+    exit(1);
+}
+
+// Try to load EC-CUBE environment
+$eccubeBootstrapPaths = [
+    getcwd() . '/data/config/config.php',
+    __DIR__ . '/../../../../data/config/config.php',
+];
+
+foreach ($eccubeBootstrapPaths as $configPath) {
+    if (file_exists($configPath)) {
+        // Set up EC-CUBE constants
+        define('HTML_REALDIR', dirname($configPath, 2) . '/../html/');
+        require_once dirname($configPath) . '/../require_base.php';
+        break;
+    }
+}
+
+use Eccube2\Migration\Command\CreateCommand;
+use Eccube2\Migration\Command\MigrateCommand;
+use Eccube2\Migration\Command\RollbackCommand;
+use Eccube2\Migration\Command\StatusCommand;
+use Symfony\Component\Console\Application;
+
+$application = new Application('EC-CUBE 2 Migration', '1.0.0');
+
+$application->add(new MigrateCommand());
+$application->add(new RollbackCommand());
+$application->add(new StatusCommand());
+$application->add(new CreateCommand());
+
+$application->run();

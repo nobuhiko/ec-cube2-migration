@@ -1,0 +1,40 @@
+{
+    "name": "ec-cube2/migration",
+    "description": "Database migration tool for EC-CUBE 2",
+    "type": "library",
+    "license": "LGPL-3.0-or-later",
+    "authors": [
+        {
+            "name": "Nobuhiko Kimoto",
+            "email": "nobuhiko.kimoto@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^7.4 || ^8.0",
+        "symfony/console": "^5.4 || ^6.4 || ^7.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.6 || ^10.0",
+        "friendsofphp/php-cs-fixer": "^3.0"
+    },
+    "suggest": {
+        "ec-cube2/cli": "For integration with EC-CUBE 2 CLI"
+    },
+    "autoload": {
+        "psr-4": {
+            "Eccube2\\Migration\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Eccube2\\Migration\\Tests\\": "tests/"
+        }
+    },
+    "bin": [
+        "bin/eccube-migrate"
+    ],
+    "scripts": {
+        "test": "phpunit",
+        "cs-fix": "php-cs-fixer fix"
+    }
+}
