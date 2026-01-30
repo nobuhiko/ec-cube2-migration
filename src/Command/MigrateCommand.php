@@ -22,6 +22,12 @@ class MigrateCommand extends Command
     {
         // Preload migration classes before EC-CUBE autoloader takes over
         class_exists(\Eccube2\Migration\Migrator::class);
+        class_exists(\Eccube2\Migration\Migration::class);
+        class_exists(\Eccube2\Migration\Platform\MySQLPlatform::class);
+        class_exists(\Eccube2\Migration\Platform\PostgreSQLPlatform::class);
+        class_exists(\Eccube2\Migration\Platform\SQLitePlatform::class);
+        class_exists(\Eccube2\Migration\Schema\Table::class);
+        class_exists(\Eccube2\Migration\Schema\Column::class);
         \Eccube2\Init::init();
     }
 
