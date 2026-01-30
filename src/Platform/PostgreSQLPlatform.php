@@ -39,6 +39,11 @@ class PostgreSQLPlatform extends AbstractPlatform
         return 'NOT NULL PRIMARY KEY';
     }
 
+    protected function isPrimaryKeyInline(): bool
+    {
+        return true;
+    }
+
     public function createSequence(Table $table): ?string
     {
         foreach ($table->getColumns() as $column) {
