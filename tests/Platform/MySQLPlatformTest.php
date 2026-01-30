@@ -25,7 +25,7 @@ class MySQLPlatformTest extends TestCase
     public function testCreateTableWithSerial(): void
     {
         $table = new Table('dtb_test');
-        $table->serial('test_id')->primary();
+        $table->serial();
         $table->text('name')->notNull();
 
         $sql = $this->platform->createTable($table);
@@ -39,7 +39,7 @@ class MySQLPlatformTest extends TestCase
     public function testCreateTableWithTimestamp(): void
     {
         $table = new Table('dtb_test');
-        $table->serial('test_id')->primary();
+        $table->serial();
         $table->timestamp('create_date')->default('CURRENT_TIMESTAMP');
 
         $sql = $this->platform->createTable($table);
@@ -50,7 +50,7 @@ class MySQLPlatformTest extends TestCase
     public function testCreateTableWithVarchar(): void
     {
         $table = new Table('dtb_test');
-        $table->serial('test_id')->primary();
+        $table->serial();
         $table->string('email', 255)->notNull();
 
         $sql = $this->platform->createTable($table);
@@ -61,7 +61,7 @@ class MySQLPlatformTest extends TestCase
     public function testCreateTableWithDecimal(): void
     {
         $table = new Table('dtb_test');
-        $table->serial('test_id')->primary();
+        $table->serial();
         $table->decimal('price', 12, 2)->notNull();
 
         $sql = $this->platform->createTable($table);
@@ -72,7 +72,7 @@ class MySQLPlatformTest extends TestCase
     public function testCreateIndex(): void
     {
         $table = new Table('dtb_test');
-        $table->serial('test_id')->primary();
+        $table->serial();
         $table->text('name');
         $table->index(['name']);
 
@@ -85,7 +85,7 @@ class MySQLPlatformTest extends TestCase
     public function testCreateUniqueIndex(): void
     {
         $table = new Table('dtb_test');
-        $table->serial('test_id')->primary();
+        $table->serial();
         $table->text('email');
         $table->unique(['email']);
 
@@ -138,7 +138,7 @@ class MySQLPlatformTest extends TestCase
     public function testCreateSequence(): void
     {
         $table = new Table('dtb_login_attempt');
-        $table->serial('login_attempt_id')->primary();
+        $table->serial();
 
         $sql = $this->platform->createSequence($table);
 
@@ -159,7 +159,7 @@ class MySQLPlatformTest extends TestCase
     public function testSequenceNamingFollowsEcCubeConvention(): void
     {
         $table = new Table('dtb_customer');
-        $table->serial('customer_id')->primary();
+        $table->serial();
 
         $sql = $this->platform->createSequence($table);
 

@@ -84,7 +84,7 @@ class {$className} extends Migration
     {
         // Example: Create a new table
         // \$this->create('dtb_example', function (Table \$table) {
-        //     \$table->serial('example_id')->primary();
+        //     \$table->serial();  // Automatically creates example_id as PRIMARY KEY
         //     \$table->text('name')->notNull();
         //     \$table->timestamp('create_date')->default('CURRENT_TIMESTAMP');
         //     \$table->timestamp('update_date')->nullable();

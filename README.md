@@ -57,14 +57,13 @@ class Version20260130000001_CreateLoginAttemptTable extends Migration
     public function up(): void
     {
         $this->create('dtb_login_attempt', function (Table $table) {
-            // カラム定義
-            $table->serial('login_attempt_id')->primary();
+            // serial() は自動的に login_attempt_id を PRIMARY KEY として作成
+            $table->serial();
             $table->text('login_id')->notNull();
             $table->text('ip_address')->nullable();
             $table->smallint('result')->notNull();
             $table->timestamp('create_date')->default('CURRENT_TIMESTAMP');
 
-            // インデックス
             $table->index(['login_id', 'create_date']);
         });
     }
@@ -120,9 +119,27 @@ public function up(): void
 
 ## 対応するカラム型
 
+### serial() - 主キー自動生成
+
+`serial()` はテーブル名から自動的にカラム名を決定します:
+
+```php
+$this->create('dtb_customer', function (Table $table) {
+    $table->serial();  // customer_id が自動作成される
+});
+
+$this->create('dtb_login_attempt', function (Table $table) {
+    $table->serial();  // login_attempt_id が自動作成される
+});
+```
+
+命名規則: `dtb_xxx` → `xxx_id`, `mtb_xxx` → `xxx_id`
+
+### その他の型
+
 | 抽象型 | MySQL | PostgreSQL | SQLite |
 |--------|-------|------------|--------|
-| `serial()` | INT AUTO_INCREMENT | SERIAL | INTEGER PRIMARY KEY |
+| `serial()` | INT AUTO_INCREMENT + _seq テーブル | SERIAL + SEQUENCE | INTEGER PRIMARY KEY + _seq テーブル |
 | `integer()` | INT | INTEGER | INTEGER |
 | `smallint()` | SMALLINT | SMALLINT | INTEGER |
 | `bigint()` | BIGINT | BIGINT | INTEGER |
@@ -139,8 +156,10 @@ public function up(): void
 $table->text('name')
     ->notNull()              // NOT NULL
     ->nullable()             // NULL許可（デフォルト）
-    ->default('value')       // デフォルト値
-    ->primary();             // 主キー
+    ->default('value');      // デフォルト値
+
+// 主キーは serial() で自動設定されます
+$table->serial();  // 自動的に PRIMARY KEY
 ```
 
 ## ec-cube2/cli との統合

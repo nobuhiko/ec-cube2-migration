@@ -55,9 +55,38 @@ class Table
     // Integer Types
     // =====================
 
-    public function serial(string $name): Column
+    /**
+     * Add serial (auto-increment) primary key column.
+     * Column name is automatically derived from table name following EC-CUBE convention:
+     * - dtb_customer -> customer_id
+     * - dtb_login_attempt -> login_attempt_id
+     */
+    public function serial(): Column
     {
-        return $this->addColumn($name, 'serial');
+        $columnName = $this->deriveSerialColumnName();
+        $column = $this->addColumn($columnName, 'serial');
+        $column->primary();
+        $this->primaryKey = $columnName;
+        return $column;
+    }
+
+    /**
+     * Derive serial column name from table name.
+     * EC-CUBE convention: dtb_xxx -> xxx_id, mtb_xxx -> xxx_id
+     */
+    private function deriveSerialColumnName(): string
+    {
+        $tableName = $this->name;
+
+        if (strpos($tableName, 'dtb_') === 0) {
+            return substr($tableName, 4) . '_id';
+        }
+        if (strpos($tableName, 'mtb_') === 0) {
+            return substr($tableName, 4) . '_id';
+        }
+
+        // Fallback: table_name -> table_name_id
+        return $tableName . '_id';
     }
 
     public function integer(string $name): Column

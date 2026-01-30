@@ -13,7 +13,7 @@ class Version20260130000001_CreateLoginAttemptTable extends Migration
     public function up(): void
     {
         $this->create('dtb_login_attempt', function (Table $table) {
-            $table->serial('login_attempt_id')->primary();
+            $table->serial();
             $table->text('login_id')->notNull();
             $table->text('ip_address')->nullable();
             $table->text('user_agent')->nullable();

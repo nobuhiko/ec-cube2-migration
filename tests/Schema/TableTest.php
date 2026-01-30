@@ -27,10 +27,28 @@ class TableTest extends TestCase
     public function testSerialColumn(): void
     {
         $table = new Table('dtb_test');
-        $column = $table->serial('test_id');
+        $column = $table->serial();
 
+        // Column name is automatically derived from table name
         $this->assertSame('test_id', $column->getName());
         $this->assertSame('serial', $column->getType());
+        // Serial is automatically primary key
+        $this->assertTrue($column->isPrimary());
+    }
+
+    public function testSerialColumnNaming(): void
+    {
+        // dtb_customer -> customer_id
+        $table1 = new Table('dtb_customer');
+        $this->assertSame('customer_id', $table1->serial()->getName());
+
+        // dtb_login_attempt -> login_attempt_id
+        $table2 = new Table('dtb_login_attempt');
+        $this->assertSame('login_attempt_id', $table2->serial()->getName());
+
+        // mtb_status -> status_id
+        $table3 = new Table('mtb_status');
+        $this->assertSame('status_id', $table3->serial()->getName());
     }
 
     public function testIntegerColumn(): void
@@ -157,10 +175,11 @@ class TableTest extends TestCase
     public function testPrimaryKey(): void
     {
         $table = new Table('dtb_test');
-        $table->serial('test_id')->primary();
+        $table->serial();
 
         $columns = $table->getColumns();
         $this->assertTrue($columns['test_id']->isPrimary());
+        $this->assertSame('test_id', $table->getPrimaryKey());
     }
 
     public function testIndex(): void
