@@ -9,7 +9,15 @@ use Eccube2\Migration\Schema\Table;
 
 abstract class AbstractPlatform implements PlatformInterface
 {
+    /** @var \SC_Query|\PDO|mixed|null */
+    protected $connection;
+
     abstract public function getName(): string;
+
+    public function setConnection($connection): void
+    {
+        $this->connection = $connection;
+    }
 
     abstract protected function getTypeMap(): array;
 

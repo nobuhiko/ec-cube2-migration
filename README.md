@@ -158,6 +158,30 @@ $table->text('name')
 $table->serial();  // 自動的に PRIMARY KEY
 ```
 
+## インデックス
+
+```php
+$table->index(['column']);              // 通常のインデックス
+$table->unique(['column']);             // ユニークインデックス
+$table->index(['col1', 'col2']);        // 複合インデックス
+```
+
+### TEXT型カラムへのインデックス（MySQL）
+
+MySQLではTEXT型カラムにインデックスを貼る場合、プレフィックス長が必要です。
+このツールでは**自動的に255が付与**されます:
+
+```php
+$table->text('memo');
+$table->index(['memo']);  // MySQL: CREATE INDEX ... ON ... (memo(255))
+```
+
+明示的に長さを指定することも可能です:
+
+```php
+$table->index(['memo(100)']);  // memo(100) を使用
+```
+
 ## ライセンス
 
 LGPL-3.0-or-later

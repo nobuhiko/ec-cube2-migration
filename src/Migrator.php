@@ -20,6 +20,7 @@ class Migrator
     {
         $this->connection = $connection;
         $this->platform = $this->createPlatform($dbType);
+        $this->platform->setConnection($connection);
         $this->migrationsPath = $migrationsPath;
     }
 

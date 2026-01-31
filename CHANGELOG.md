@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2025-01-31
+
+### Added
+
+- Automatic prefix length `(255)` for TEXT column indexes in MySQL
+- Support for explicit index prefix length (e.g., `['memo(100)']`)
+- `PlatformInterface::setConnection()` for runtime database queries
+
 ## [1.0.0] - 2025-01-31
 
 ### Added

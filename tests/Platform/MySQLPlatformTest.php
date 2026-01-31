@@ -73,7 +73,7 @@ class MySQLPlatformTest extends TestCase
     {
         $table = new Table('dtb_test');
         $table->serial();
-        $table->text('name');
+        $table->string('name', 255);
         $table->index(['name']);
 
         $indexes = $this->platform->createIndexes($table);
@@ -86,13 +86,53 @@ class MySQLPlatformTest extends TestCase
     {
         $table = new Table('dtb_test');
         $table->serial();
-        $table->text('email');
+        $table->string('email', 255);
         $table->unique(['email']);
 
         $indexes = $this->platform->createIndexes($table);
 
         $this->assertCount(1, $indexes);
         $this->assertStringContainsString('CREATE UNIQUE INDEX uniq_dtb_test_email ON dtb_test (email)', $indexes[0]);
+    }
+
+    public function testCreateIndexOnTextColumnAddsPrefix(): void
+    {
+        $table = new Table('dtb_test');
+        $table->serial();
+        $table->text('memo');
+        $table->index(['memo']);
+
+        $indexes = $this->platform->createIndexes($table);
+
+        $this->assertCount(1, $indexes);
+        $this->assertStringContainsString('CREATE INDEX idx_dtb_test_memo ON dtb_test (memo(255))', $indexes[0]);
+    }
+
+    public function testCreateIndexOnTextColumnWithExplicitLength(): void
+    {
+        $table = new Table('dtb_test');
+        $table->serial();
+        $table->text('memo');
+        $table->index(['memo(100)']);
+
+        $indexes = $this->platform->createIndexes($table);
+
+        $this->assertCount(1, $indexes);
+        $this->assertStringContainsString('CREATE INDEX idx_dtb_test_memo(100) ON dtb_test (memo(100))', $indexes[0]);
+    }
+
+    public function testCreateCompositeIndexWithTextColumn(): void
+    {
+        $table = new Table('dtb_test');
+        $table->serial();
+        $table->integer('status');
+        $table->text('memo');
+        $table->index(['status', 'memo']);
+
+        $indexes = $this->platform->createIndexes($table);
+
+        $this->assertCount(1, $indexes);
+        $this->assertStringContainsString('ON dtb_test (status, memo(255))', $indexes[0]);
     }
 
     public function testDropTable(): void

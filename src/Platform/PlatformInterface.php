@@ -59,4 +59,10 @@ interface PlatformInterface
      * Get default value SQL
      */
     public function getDefaultValue($value): string;
+
+    /**
+     * Set database connection for runtime queries
+     * @param \SC_Query|\PDO|mixed $connection
+     */
+    public function setConnection($connection): void;
 }
