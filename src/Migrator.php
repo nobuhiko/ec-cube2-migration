@@ -24,6 +24,71 @@ class Migrator
         $this->migrationsPath = $migrationsPath;
     }
 
+    /**
+     * Run migrations from web installer using DSN array
+     *
+     * @param array $dsn DSN array with keys: phptype, hostspec, database, username, password, port
+     * @param string $migrationsPath Path to migrations directory
+     * @return array{success: bool, message: string, executed: string[]}
+     */
+    public static function runFromWebInstaller(array $dsn, string $migrationsPath): array
+    {
+        $result = ['success' => false, 'message' => '', 'executed' => []];
+
+        try {
+            $pdo = self::createPdoFromDsn($dsn);
+            $migrator = new self($pdo, $dsn['phptype'], $migrationsPath);
+            $result['executed'] = $migrator->migrate();
+            $result['success'] = true;
+            $result['message'] = count($result['executed']) . ' migration(s) executed';
+        } catch (\Exception $e) {
+            $result['message'] = $e->getMessage();
+        }
+
+        return $result;
+    }
+
+    /**
+     * Create PDO connection from EC-CUBE DSN array
+     *
+     * @param array $dsn DSN array with keys: phptype, hostspec, database, username, password, port
+     * @return \PDO
+     */
+    private static function createPdoFromDsn(array $dsn): \PDO
+    {
+        $dbType = $dsn['phptype'];
+        $host = $dsn['hostspec'] ?? '127.0.0.1';
+        $database = $dsn['database'];
+        $username = $dsn['username'] ?? null;
+        $password = $dsn['password'] ?? null;
+        $port = $dsn['port'] ?? null;
+
+        switch ($dbType) {
+            case 'mysqli':
+            case 'mysql':
+                $portPart = $port ? ";port={$port}" : '';
+                $pdoDsn = "mysql:host={$host};dbname={$database}{$portPart};charset=utf8";
+                break;
+            case 'pgsql':
+            case 'postgres':
+            case 'postgresql':
+                $portPart = $port ? ";port={$port}" : '';
+                $pdoDsn = "pgsql:host={$host};dbname={$database}{$portPart}";
+                break;
+            case 'sqlite3':
+            case 'sqlite':
+                $pdoDsn = "sqlite:{$database}";
+                break;
+            default:
+                throw new \InvalidArgumentException("Unsupported database type: {$dbType}");
+        }
+
+        $pdo = new \PDO($pdoDsn, $username, $password);
+        $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+
+        return $pdo;
+    }
+
     private function createPlatform(string $dbType): PlatformInterface
     {
         switch ($dbType) {
