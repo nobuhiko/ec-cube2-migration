@@ -36,8 +36,15 @@ class Migrator
         $result = ['success' => false, 'message' => '', 'executed' => []];
 
         try {
-            $pdo = self::createPdoFromDsn($dsn);
-            $migrator = new self($pdo, $dsn['phptype'], $migrationsPath);
+            // Prefer SC_Query if available (EC-CUBE context with MDB2)
+            if (class_exists('\SC_Query')) {
+                $connection = new \SC_Query($dsn, false, true);
+            } else {
+                // Fallback to PDO for standalone/test context
+                $connection = self::createPdoFromDsn($dsn);
+            }
+
+            $migrator = new self($connection, $dsn['phptype'], $migrationsPath);
             $result['executed'] = $migrator->migrate();
             $result['success'] = true;
             $result['message'] = count($result['executed']) . ' migration(s) executed';
